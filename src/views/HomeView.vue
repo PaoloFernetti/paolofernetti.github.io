@@ -7,7 +7,7 @@ import HeroSection from '@/components/sections/HeroSection.vue'
 import AboutSection from '@/components/sections/AboutSection.vue'
 import ExperienceSection from '@/components/sections/ExperienceSection.vue'
 import SkillsSection from '@/components/sections/SkillsSection.vue'
-import ProjectsSection from '@/components/sections/ProjectsSection.vue'
+import RepositoriesSection from '@/components/sections/RepositoriesSection.vue'
 import BlogSection from '@/components/sections/BlogSection.vue'
 import ContactSection from '@/components/sections/ContactSection.vue'
 
@@ -28,8 +28,8 @@ useReveal(mainRef)
     <SectionTitle class="container" index="03" title="Skills" />
     <SkillsSection />
 
-    <SectionTitle class="container" index="04" title="Projects" />
-    <ProjectsSection />
+    <SectionTitle class="container" index="04" title="My repositories" />
+    <RepositoriesSection />
 
     <SectionTitle class="container" index="05" title="Blog" />
     <BlogSection />

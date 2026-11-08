@@ -17,7 +17,7 @@ import ParticlesCanvas from '../ParticlesCanvas.vue'
       <p class="hero__tagline">{{ profile.tagline }}</p>
 
       <div class="hero__actions">
-        <a href="#projects" class="btn btn--primary">View my work</a>
+        <a href="#repos" class="btn btn--primary">View my work</a>
         <a href="#contact" class="btn btn--ghost">Get in touch</a>
       </div>
     </div>
