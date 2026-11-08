@@ -8,6 +8,7 @@ import AboutSection from '@/components/sections/AboutSection.vue'
 import ExperienceSection from '@/components/sections/ExperienceSection.vue'
 import SkillsSection from '@/components/sections/SkillsSection.vue'
 import RepositoriesSection from '@/components/sections/RepositoriesSection.vue'
+import GamingSection from '@/components/sections/GamingSection.vue'
 import ContactSection from '@/components/sections/ContactSection.vue'
 
 const mainRef = ref<HTMLElement | null>(null)
@@ -30,7 +31,10 @@ useReveal(mainRef)
     <SectionTitle class="container" index="04" title="My repositories" />
     <RepositoriesSection />
 
-    <SectionTitle class="container" index="05" title="Contact" />
+    <SectionTitle class="container" index="05" title="Gaming" />
+    <GamingSection />
+
+    <SectionTitle class="container" index="06" title="Contact" />
     <ContactSection />
   </div>
 </template>

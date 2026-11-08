@@ -46,8 +46,12 @@ jobs:
         # REPOS_TOKEN: optional PAT (fine-grained, read-only) that includes
         # private repositories. WARNING: private repo names/descriptions
         # become publicly visible in the built site bundle!
+        # STEAM_API_KEY: optional Steam Web API key for the Gaming section
+        # (full library via IPlayerService/GetOwnedGames). Without it the
+        # public XML feed is used. The key itself is never committed.
         env:
           REPOS_TOKEN: ${{ secrets.REPOS_TOKEN }}
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
         run: npm run build
 
       - name: Setup Pages

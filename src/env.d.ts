@@ -11,3 +11,9 @@ declare module 'virtual:user-repos' {
   const repos: Repo[]
   export default repos
 }
+
+declare module 'virtual:steam-data' {
+  import type { SteamData } from './data/steam'
+  const steam: SteamData
+  export default steam
+}
