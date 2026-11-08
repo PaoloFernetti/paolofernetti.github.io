@@ -7,9 +7,9 @@ on:
       - main
       - master
 
-  # Refresh repository data weekly
+  # Rebuild daily to keep repository/Steam data fresh
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 6 * * *'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
