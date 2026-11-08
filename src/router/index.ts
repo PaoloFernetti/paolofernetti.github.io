@@ -9,11 +9,6 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
     },
     {
-      path: '/blog/:slug',
-      name: 'post',
-      component: () => import('../views/PostView.vue'),
-    },
-    {
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },

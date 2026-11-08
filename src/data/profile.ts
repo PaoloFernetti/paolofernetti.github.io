@@ -24,8 +24,8 @@ export const profile: Profile = {
     'I am a software engineer with a passion for crafting clean, maintainable code and delightful user experiences. Over the years I have worked across the stack — from designing robust backends and infrastructure to building polished, animated frontends.',
     'I enjoy solving complex problems, automating everything that can be automated, and constantly learning new technologies. When I am not coding, I write about engineering topics, contribute to open source and experiment with creative coding.',
   ],
-  location: 'Europe · Remote',
-  email: 'paolo.fernetti@example.com',
+  location: 'Russian Federation · Remote',
+  email: 'paolofernetti@yandex.ru',
   avatarInitials: 'PF',
   socials: [
     {

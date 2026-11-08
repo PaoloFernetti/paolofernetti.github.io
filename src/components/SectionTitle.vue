@@ -18,7 +18,6 @@ defineProps<{
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 48px;
 }
 
 .section-title__index {

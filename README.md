@@ -9,9 +9,8 @@ Personal portfolio website of Paolo Fernetti — neon-styled SPA built with **Vu
 - ⚡ Vue 3 + TypeScript + Vite (zero UI-library dependencies)
 - 🌌 Interactive particle engine on canvas (pointer-reactive, ~120 lines)
 - ✨ Neon design system on CSS custom properties (glow, glassmorphism, gradients)
-- 🧭 Sections: Hero, About, Experience timeline, Skills, My repositories, Blog, Contact
+- 🧭 Sections: Hero, About, Experience timeline, Skills, My repositories, Contact
 - 🗂 "My repositories" section is populated at **build time** from the GitHub REST API (no client-side API calls — works on any network). Includes search filter, language colors, stars, forks; private repos are included when the `REPOS_TOKEN` secret (a read-only PAT) is configured, with weekly scheduled rebuilds to keep data fresh
-- 📝 Blog with per-post pages via `vue-router` (history mode + 404.html SPA fallback)
 - 🎬 Scroll-reveal animations via `IntersectionObserver`
 - 📱 Fully responsive, mobile burger menu
 - 🚀 Auto-deploy to GitHub Pages via GitHub Actions
@@ -26,16 +25,15 @@ Personal portfolio website of Paolo Fernetti — neon-styled SPA built with **Vu
     ├── router/index.ts            # vue-router (history mode)
     ├── assets/main.css            # neon design system (CSS variables)
     ├── composables/useReveal.ts   # scroll-reveal composable
-    ├── data/                      # typed content: profile, experience, skills, posts
+    ├── data/                      # typed content: profile, experience, skills, repos
     ├── components/
     │   ├── ParticlesCanvas.vue    # interactive particle background
     │   ├── NavBar.vue             # glassmorphism navigation
     │   ├── SectionTitle.vue
     │   ├── AppFooter.vue
-    │   └── sections/              # Hero, About, Experience, Skills, Repositories, Blog, Contact
+    │   └── sections/              # Hero, About, Experience, Skills, Repositories, Contact
     └── views/
-        ├── HomeView.vue
-        └── PostView.vue           # blog article page (/blog/:slug)
+        └── HomeView.vue
 ```
 
 ## Editing content
@@ -47,7 +45,7 @@ All content lives in typed modules under [`src/data/`](src/data):
 | `profile.ts` | Name, bio, email, social links |
 | `experience.ts` | Career timeline |
 | `skills.ts` | Skill groups and levels |
-| `posts.ts` | Blog articles (sections rendered on `/blog/:slug`) |
+| `repos.json` | Snapshot fallback for the repositories section (replaced by fresh API data at build time) |
 
 The "My repositories" section is populated at build time by the [`githubRepos()` plugin](vite.config.ts). It fetches the user's repos from the GitHub REST API and embeds them into the bundle; if the API is unreachable, it falls back to the committed snapshot in [`src/data/repos.json`](src/data/repos.json).
 
