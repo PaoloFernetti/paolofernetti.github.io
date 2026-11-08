@@ -128,3 +128,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+# temp debug files 
+lv.html 
+lv*.js 
+live*.js 
+live*.html
