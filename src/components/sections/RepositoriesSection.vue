@@ -1,33 +1,24 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 
-interface Repo {
-  id: number
-  name: string
-  html_url: string
-  description: string | null
-  language: string | null
-  stargazers_count: number
-  forks_count: number
-  updated_at: string
-  fork: boolean
-  archived: boolean
-}
+import repos from 'virtual:user-repos'
 
-const GITHUB_USER = 'PaoloFernetti'
-
-const repos = ref<Repo[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
 const query = ref('')
+
+const visibleRepos = computed(() =>
+  repos
+    .filter((r) => !r.fork)
+    .sort(
+      (a, b) =>
+        b.stargazers_count - a.stargazers_count ||
+        b.updated_at.localeCompare(a.updated_at),
+    ),
+)
 
 const filteredRepos = computed(() => {
   const q = query.value.trim().toLowerCase()
-  const sorted = [...repos.value]
-    .filter((r) => !r.fork)
-    .sort((a, b) => b.stargazers_count - a.stargazers_count)
-  if (!q) return sorted
-  return sorted.filter(
+  if (!q) return visibleRepos.value
+  return visibleRepos.value.filter(
     (r) =>
       r.name.toLowerCase().includes(q) ||
       (r.description ?? '').toLowerCase().includes(q) ||
@@ -74,147 +65,82 @@ function formatDate(iso: string): string {
     day: 'numeric',
   })
 }
-
-onMounted(async () => {
-  try {
-    const res = await fetch(
-      `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=updated`,
-      { headers: { Accept: 'application/vnd.github+json' } },
-    )
-    if (!res.ok) {
-      throw new Error(`GitHub API responded with status ${res.status}`)
-    }
-    repos.value = (await res.json()) as Repo[]
-  } catch (e) {
-    error.value =
-      e instanceof Error ? e.message : 'Failed to load repositories'
-  } finally {
-    loading.value = false
-  }
-})
 </script>
 
 <template>
   <section id="repos" class="section container">
-    <div v-if="loading" class="repos-state">
-      <span class="repos-state__spinner"></span>
-      <p class="repos-state__text">Loading repositories from GitHub…</p>
-    </div>
+    <input
+      v-model="query"
+      type="search"
+      class="repos-search"
+      placeholder="Filter by name, description or language…"
+      aria-label="Filter repositories"
+    />
 
-    <div v-else-if="error" class="repos-state">
-      <p class="repos-state__text repos-state__text--error">
-        ⚠ Could not load repositories: {{ error }}
-      </p>
+    <p class="repos-count">
+      {{ filteredRepos.length }} public
+      {{ filteredRepos.length === 1 ? 'repository' : 'repositories' }}
+    </p>
+
+    <div class="repos-grid">
       <a
-        :href="`https://github.com/${GITHUB_USER}?tab=repositories`"
+        v-for="repo in filteredRepos"
+        :key="repo.id"
+        :href="repo.html_url"
         target="_blank"
         rel="noopener noreferrer"
-        class="btn btn--primary"
+        class="repo-card reveal"
       >
-        Open GitHub profile ↗
+        <div class="repo-card__head">
+          <h3 class="repo-card__name">{{ repo.name }}</h3>
+          <span
+            v-if="repo.private"
+            class="repo-card__badge repo-card__badge--private"
+          >private</span>
+          <span
+            v-else-if="repo.archived"
+            class="repo-card__badge repo-card__badge--archived"
+          >archived</span>
+        </div>
+
+        <p class="repo-card__description">
+          {{ repo.description || 'No description provided.' }}
+        </p>
+
+        <div class="repo-card__meta">
+          <span v-if="repo.language" class="repo-card__lang">
+            <span
+              class="repo-card__lang-dot"
+              :style="{ background: langColor(repo.language) }"
+            ></span>
+            {{ repo.language }}
+          </span>
+
+          <span v-if="repo.stargazers_count" class="repo-card__stat" title="Stars">
+            ★ {{ formatNumber(repo.stargazers_count) }}
+          </span>
+
+          <span v-if="repo.forks_count" class="repo-card__stat" title="Forks">
+            ⑂ {{ formatNumber(repo.forks_count) }}
+          </span>
+
+          <span
+            class="repo-card__updated"
+            :title="`Updated ${formatDate(repo.updated_at)}`"
+          >
+            Updated {{ formatDate(repo.updated_at) }}
+          </span>
+        </div>
       </a>
     </div>
 
-    <template v-else>
-      <input
-        v-model="query"
-        type="search"
-        class="repos-search"
-        placeholder="Filter by name, description or language…"
-        aria-label="Filter repositories"
-      />
-
-      <p class="repos-count">
-        {{ filteredRepos.length }} public
-        {{ filteredRepos.length === 1 ? 'repository' : 'repositories' }}
-      </p>
-
-      <div class="repos-grid">
-        <a
-          v-for="repo in filteredRepos"
-          :key="repo.id"
-          :href="repo.html_url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="repo-card reveal"
-        >
-          <div class="repo-card__head">
-            <h3 class="repo-card__name">{{ repo.name }}</h3>
-            <span v-if="repo.archived" class="repo-card__archived">archived</span>
-          </div>
-
-          <p class="repo-card__description">
-            {{ repo.description || 'No description provided.' }}
-          </p>
-
-          <div class="repo-card__meta">
-            <span
-              v-if="repo.language"
-              class="repo-card__lang"
-            >
-              <span
-                class="repo-card__lang-dot"
-                :style="{ background: langColor(repo.language) }"
-              ></span>
-              {{ repo.language }}
-            </span>
-
-            <span v-if="repo.stargazers_count" class="repo-card__stat" title="Stars">
-              ★ {{ formatNumber(repo.stargazers_count) }}
-            </span>
-
-            <span v-if="repo.forks_count" class="repo-card__stat" title="Forks">
-              ⑂ {{ formatNumber(repo.forks_count) }}
-            </span>
-
-            <span class="repo-card__updated" :title="`Updated ${formatDate(repo.updated_at)}`">
-              Updated {{ formatDate(repo.updated_at) }}
-            </span>
-          </div>
-        </a>
-      </div>
-
-      <p v-if="filteredRepos.length === 0" class="repos-state">
-        <span class="repos-state__text">No repositories match your filter.</span>
-      </p>
-    </template>
+    <p v-if="filteredRepos.length === 0" class="repos-empty">
+      No repositories match your filter.
+    </p>
   </section>
 </template>
 
 <style scoped>
-.repos-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 48px 0;
-}
-
-.repos-state__text {
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-}
-
-.repos-state__text--error {
-  color: var(--neon-pink);
-}
-
-.repos-state__spinner {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 3px solid var(--border-subtle);
-  border-top-color: var(--neon-cyan);
-  animation: spin 0.9s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .repos-search {
   width: 100%;
   max-width: 480px;
@@ -293,14 +219,22 @@ onMounted(async () => {
   text-shadow: var(--glow-cyan);
 }
 
-.repo-card__archived {
+.repo-card__badge {
   font-family: var(--font-mono);
   font-size: 0.65rem;
   padding: 2px 10px;
   border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.repo-card__badge--private {
+  color: var(--neon-pink);
+  border: 1px solid rgba(255, 46, 151, 0.5);
+}
+
+.repo-card__badge--archived {
   color: var(--neon-amber);
   border: 1px solid rgba(255, 179, 71, 0.5);
-  flex-shrink: 0;
 }
 
 .repo-card__description {
@@ -348,6 +282,14 @@ onMounted(async () => {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--text-dim);
+}
+
+.repos-empty {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 32px 0;
 }
 
 @media (max-width: 640px) {
