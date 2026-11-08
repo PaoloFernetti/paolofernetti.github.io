@@ -11,7 +11,7 @@ export interface Profile {
   about: string[]
   location: string
   email: string
-  avatarInitials: string
+  avatar: string
   socials: SocialLink[]
 }
 
@@ -26,7 +26,7 @@ export const profile: Profile = {
   ],
   location: 'Russian Federation · Remote',
   email: 'paolofernetti@yandex.ru',
-  avatarInitials: 'PF',
+  avatar: '/ava.jpg',
   socials: [
     {
       label: 'GitHub',

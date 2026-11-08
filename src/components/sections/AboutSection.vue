@@ -6,9 +6,14 @@ import { profile } from '@/data/profile'
   <section id="about" class="section container">
     <div class="about reveal">
       <div class="about__avatar-wrap">
-        <div class="about__avatar" :data-initials="profile.avatarInitials">
-          {{ profile.avatarInitials }}
-        </div>
+        <img
+          :src="profile.avatar"
+          :alt="`Portrait of ${profile.name}`"
+          class="about__avatar about__avatar--img"
+          width="200"
+          height="200"
+          loading="lazy"
+        />
         <div class="about__avatar-ring"></div>
       </div>
 
@@ -55,16 +60,15 @@ import { profile } from '@/data/profile'
   width: 200px;
   height: 200px;
   border-radius: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3.4rem;
-  font-weight: 700;
-  font-family: var(--font-mono);
+  border: 2px solid transparent;
+}
+
+.about__avatar--img {
+  display: block;
+  object-fit: cover;
   background:
     linear-gradient(var(--bg-base), var(--bg-base)) padding-box,
     var(--gradient-brand) border-box;
-  border: 2px solid transparent;
 }
 
 .about__avatar-ring {
