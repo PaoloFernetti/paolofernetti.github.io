@@ -1,6 +1,23 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { skills } from '@/data/skills'
+import langStats from 'virtual:lang-stats'
 import { onMounted, ref } from 'vue'
+
+// The Languages card is derived from the actual programming languages
+// used across the repositories (share of total code bytes). Static
+// data from skills.ts is used as a fallback when no stats are available.
+const groups = computed(() => {
+  if (langStats.length === 0) return skills
+  return [
+    {
+      title: 'Languages',
+      accent: 'cyan' as const,
+      skills: langStats.map((s) => ({ name: s.language, level: s.share })),
+    },
+    ...skills.slice(1),
+  ]
+})
 
 const skillsRef = ref<HTMLElement | null>(null)
 const visible = ref(false)
@@ -23,7 +40,7 @@ onMounted(() => {
   <section id="skills" class="section container">
     <div ref="skillsRef" class="skills-grid">
       <div
-        v-for="(group, gi) in skills"
+        v-for="(group, gi) in groups"
         :key="group.title"
         class="skill-card reveal"
         :class="`skill-card--${group.accent}`"

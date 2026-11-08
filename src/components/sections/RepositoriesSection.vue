@@ -5,6 +5,21 @@ import repos from 'virtual:user-repos'
 
 const query = ref('')
 
+const publicCount = computed(
+  () => visibleRepos.value.filter((r) => !r.private).length,
+)
+
+const privateCount = computed(
+  () => visibleRepos.value.filter((r) => r.private).length,
+)
+
+const countLabel = computed(() => {
+  const parts: string[] = [`${filteredRepos.value.length} repositories`]
+  if (publicCount.value) parts.push(`${publicCount.value} public`)
+  if (privateCount.value) parts.push(`${privateCount.value} private`)
+  return parts.join(' · ')
+})
+
 const visibleRepos = computed(() =>
   repos
     .filter((r) => !r.fork)
@@ -77,10 +92,7 @@ function formatDate(iso: string): string {
       aria-label="Filter repositories"
     />
 
-    <p class="repos-count">
-      {{ filteredRepos.length }} public
-      {{ filteredRepos.length === 1 ? 'repository' : 'repositories' }}
-    </p>
+    <p class="repos-count">{{ countLabel }}</p>
 
     <div class="repos-grid">
       <a

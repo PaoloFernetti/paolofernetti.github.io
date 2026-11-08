@@ -22,7 +22,11 @@ const STEAM_PROFILE = 'https://steamcommunity.com/id/sirfernetti'
 function githubRepos(): Plugin {
   const virtualId = 'virtual:user-repos'
   const resolvedId = '\0' + virtualId
+  const langStatsId = 'virtual:lang-stats'
+  const langStatsResolvedId = '\0' + langStatsId
   let cached: string | null = null
+  let cachedLangStats: string | null = null
+  let reposCache: Array<Record<string, unknown>> | null = null
 
   async function fetchRepos(): Promise<unknown[]> {
     const token = process.env.REPOS_TOKEN
@@ -60,7 +64,7 @@ function githubRepos(): Plugin {
     }
   }
 
-  function keepOnly(repos: unknown[]): unknown[] {
+  function keepOnly(repos: unknown[]): Array<Record<string, unknown>> {
     // Normalize to the fields the UI consumes (keeps the bundle small)
     return repos
       .filter((r): r is Record<string, unknown> => r !== null && typeof r === 'object')
@@ -79,14 +83,95 @@ function githubRepos(): Plugin {
       }))
   }
 
+  /**
+   * Aggregates programming language usage across the repositories.
+   * Primary source: per-repo byte counts from GitHub `languages_url`
+   * (accurate linguist data). Fallback: repo counts per primary language.
+   */
+  async function languageShares(
+    repos: Array<Record<string, unknown>>,
+  ): Promise<Array<{ language: string; share: number }>> {
+    const token = process.env.REPOS_TOKEN ?? process.env.GITHUB_TOKEN
+    const bytes: Record<string, number> = {}
+    let fetched = 0
+
+    for (const repo of repos.filter((r) => !r['fork']).slice(0, 30)) {
+      const url = repo['languages_url']
+      if (typeof url !== 'string' || !url) continue
+      try {
+        const res = await fetch(url, {
+          headers: {
+            Accept: 'application/vnd.github+json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        })
+        if (!res.ok) continue
+        const langs = (await res.json()) as Record<string, number>
+        for (const [lang, size] of Object.entries(langs)) {
+          bytes[lang] = (bytes[lang] ?? 0) + Number(size)
+        }
+        fetched++
+      } catch {
+        /* ignore single repo failures */
+      }
+    }
+
+    const total = Object.values(bytes).reduce((a, b) => a + b, 0)
+    if (fetched > 0 && total > 0) {
+      return Object.entries(bytes)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([language, size]) => ({
+          language,
+          share: Math.round((size / total) * 1000) / 10,
+        }))
+    }
+
+    // Fallback: share by repo count per primary language
+    const counts: Record<string, number> = {}
+    for (const repo of repos) {
+      const lang = repo['language']
+      if (typeof lang === 'string' && lang) {
+        counts[lang] = (counts[lang] ?? 0) + 1
+      }
+    }
+    const countTotal = Object.values(counts).reduce((a, b) => a + b, 0)
+    if (countTotal === 0) return []
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([language, count]) => ({
+        language,
+        share: Math.round((count / countTotal) * 1000) / 10,
+      }))
+  }
+
   return {
     name: 'github-repos',
     enforce: 'pre',
     resolveId(id) {
       if (id === virtualId) return resolvedId
+      if (id === langStatsId) return langStatsResolvedId
     },
     async load(id) {
-      if (id !== resolvedId) return
+      if (id !== resolvedId && id !== langStatsResolvedId) return
+
+      if (id === langStatsResolvedId) {
+        if (cachedLangStats) return cachedLangStats
+        if (!reposCache) {
+          try {
+            const repos = await fetchRepos()
+            if (repos.length === 0) throw new Error('empty response')
+            reposCache = keepOnly(repos)
+          } catch {
+            reposCache = keepOnly(snapshot())
+          }
+        }
+        const shares = await languageShares(reposCache!)
+        cachedLangStats = `export default ${JSON.stringify(shares)}\n`
+        return cachedLangStats
+      }
+
       if (cached) return cached
 
       let repos: unknown[]
@@ -97,7 +182,8 @@ function githubRepos(): Plugin {
         repos = snapshot()
       }
 
-      cached = `export default ${JSON.stringify(keepOnly(repos))}\n`
+      reposCache = keepOnly(repos)
+      cached = `export default ${JSON.stringify(reposCache)}\n`
       return cached
     },
   }
