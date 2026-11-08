@@ -11,7 +11,7 @@ Personal portfolio website of Paolo Fernetti — neon-styled SPA built with **Vu
 - ✨ Neon design system on CSS custom properties (glow, glassmorphism, gradients)
 - 🧭 Sections: Hero, About, Experience timeline, Skills, My repositories, Gaming (Steam), Contact
 - 🎮 "Gaming" section is populated at **build time** from Steam: official Web API when the `STEAM_API_KEY` secret is set (full library, profile level), otherwise the public community XML feed — with a committed snapshot fallback in `src/data/steam.json`
-- ⏱ Data refreshes on every push to `master` and via a **daily scheduled build** (06:00 UTC)
+- ⏱ Data refreshes on every push to `master` and via a **daily scheduled build** (06:00 UTC). Scheduled runs also push an empty keep-alive commit (marked `[skip ci]`) so GitHub never disables the schedule after 60 days of inactivity
 - 🗂 "My repositories" section is populated at **build time** from the GitHub REST API (no client-side API calls — works on any network). Includes search filter, language colors, stars, forks; private repos are included when the `REPOS_TOKEN` secret (a read-only PAT) is configured, with weekly scheduled rebuilds to keep data fresh
 - 🎬 Scroll-reveal animations via `IntersectionObserver`
 - 📱 Fully responsive, mobile burger menu
